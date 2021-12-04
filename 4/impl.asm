@@ -25,7 +25,10 @@ main:
           lea rbx, [rsp+24]
           xor r15, r15
 
-          ;mov rsi,
+          mov rdi, rbx
+          mov rax, 255
+          mov rcx, 128
+          rep stosb
 
 commaloop:
           mov  rdi, tocomma
@@ -50,7 +53,7 @@ donecomma:
           mov al, [rbx+11]
           printnum rax
 
-          mov al, [rbx+22]
+          mov al, [rbx+27]
           printnum rax ; FAIL: this should be zero
 
           ; time number x is called: int rbx[x];
