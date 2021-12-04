@@ -7,12 +7,18 @@
           extern    scanf
           extern    printf
 
-%macro readnum 2
+;%macro readnum 2
+;%endmacro
+
+%macro printnum 1
+   mov rdi, fmt
+   mov rsi, %1
+   call printf
 %endmacro
 
           section   .text
 main:
-          sub  rsp,  (19*8)
+          sub  rsp,  ((3+32)*8)
           lea rbx, [rsp+24]
           xor rbp, rbp
 
@@ -27,22 +33,22 @@ commaloop:
           jne commaloop
 
 done:
-          mov  rdi, message
-          call puts
+          printnum rbp
+          printnum [rbx+4*rbp-4]
 
-          mov  rdi, fmt
-          mov  rsi, rbp
-          call printf
+          mov  rdi, readnum
+          lea  rsi, [rsp+16]
+          call scanf
 
-          mov  rdi, fmt
-          mov  rsi, [rbx+4*rbp-4]
-          call printf
+          printnum rax
+          printnum [rsp+16]
 
-          add  rsp, (19*8)
+
+          add  rsp, ((3+32)*8)
           ret
-message:
-          db        "HALLOJ!", 0
 tocomma:
           db        "%d,%n", 0
+readnum:
+          db        "%d", 0
 fmt:
           db        "%d", 0xA, 0
