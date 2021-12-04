@@ -12,7 +12,7 @@ main:
           sub  rsp,  24
 
           xor rax, rax
-          mov [rsp+24], rax
+          mov rbp, rax
 
           mov  rdi, scanfmt            ; rdi: first arg
           lea  rsi, [rsp+8]            ; rsi: second arg
@@ -28,7 +28,7 @@ loop:
           mov rcx, [rsp+16]
           cmp rcx, [rsp+8]
           jng skip
-          add qword [rsp+24], 1 ; add one if greater
+          add rbp, 1 ; add one if greater
 skip:
           mov [rsp+8], rcx
           jmp loop
@@ -38,7 +38,7 @@ done:
           call puts
 
           mov  rdi, fmt            ; rdi: first arg
-          mov  rsi, [rsp+24]
+          mov  rsi, rbp
           call printf
           add  rsp, 24
           ret
