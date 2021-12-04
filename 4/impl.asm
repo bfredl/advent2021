@@ -18,25 +18,44 @@
 
           section   .text
 main:
-          sub  rsp,  ((3+32)*8)
+          push rbp
+          mov rbp, rsp
+          sub  rsp, (2*8+128+(4*32))
+
           lea rbx, [rsp+24]
-          xor rbp, rbp
+          xor r15, r15
+
+          ;mov rsi,
 
 commaloop:
           mov  rdi, tocomma
-          lea  rsi, [rbx+4*rbp]
+          lea  rsi, [rsp+8]
           mov qword [rsp+16], 0
           lea  rdx, [rsp+16]
           call scanf
-          inc rbp
+
           cmp qword [rsp+16], 0
-          jne commaloop
+          je donecomma
+
+          mov rax, [rsp+8]
+          mov [rbx+rax], r15b
+
+          inc r15
+
+          jmp commaloop
 
 donecomma:
-          printnum rbp
-          printnum [rbx+4*rbp-4]
+          printnum r15
 
-          lea r12, [rbx+4*rbp]
+          mov al, [rbx+11]
+          printnum rax
+
+          mov al, [rbx+22]
+          printnum rax ; FAIL: this should be zero
+
+          ; time number x is called: int rbx[x];
+
+          lea r12, [rbx+128]
           xor r13, r13
 
 boardloop:
@@ -55,8 +74,14 @@ boardloop:
           printnum [r12+4*r13-4]
 
 done:
+          ; board numbers: int r12[25];
 
-          add  rsp, ((3+32)*8)
+          lea r13, [r12+(4*25)]
+
+          ; board markers: int r13[25];
+
+          mov rsp, rbp
+          pop rbp
           ret
 tocomma:
           db        "%d,%n", 0
