@@ -5,20 +5,28 @@
           global    main
           extern    puts
           extern    scanf
+          extern    printf
 
           section   .text
 main:
-          mov       rdi, fmt            ; rdi: first arg
-          xor       rax, rax
-          push      rax
-          mov       rsi, rsp            ; rdi: first arg
+          mov  rdi, scanfmt            ; rdi: first arg
+          xor  rax, rax
+          sub  rsp,  24
+          lea  rsi, [rsp+8]            ; rsi: second arg
 
           call scanf
 
-          mov       rdi, message            ; rdi: first arg
-          call      puts
+          mov  rdi, message            ; rdi: first arg
+          call puts
+
+          mov  rdi, fmt            ; rdi: first arg
+          mov  rsi, [rsp+8]
+          call printf
+          add  rsp, 24
           ret
 message:
-          db        "HALLOJ!", 0            ; NULL-terminated string
+          db        "HALLOJ!", 0
+scanfmt:
+          db        "%d", 0
 fmt:
-          db        "%d\n", 0            ; NULL-terminated string
+          db        "%d", 0xA, 0
