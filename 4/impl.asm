@@ -32,17 +32,29 @@ commaloop:
           cmp qword [rsp+16], 0
           jne commaloop
 
-done:
+donecomma:
           printnum rbp
           printnum [rbx+4*rbp-4]
 
+          lea r12, [rbx+4*rbp]
+          xor r13, r13
+
+boardloop:
+
           mov  rdi, readnum
-          lea  rsi, [rsp+16]
+          lea  rsi, [r12+4*r13]
           call scanf
+          cmp rax, 1
+          jne done
 
-          printnum rax
-          printnum [rsp+16]
+          inc r13
 
+          cmp r13, 25
+          jl boardloop
+
+          printnum [r12+4*r13-4]
+
+done:
 
           add  rsp, ((3+32)*8)
           ret
