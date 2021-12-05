@@ -26,8 +26,12 @@ main:
     ; rsp = alloca(1024*1024)
     sub rsp, (1024*1024)
     mov rbx, rsp
-    sub rsp, 4*8
+    sub rsp, 8*8
 
+    mov rdi, rbx
+    mov rax, 0
+    mov rcx, (1024*1024)
+    rep stosb
 
 nextline:
     mov rdi, lineline
@@ -73,12 +77,20 @@ drawrow:
 drawcode:
 ; make sure rdi <= rcx by swapping
     cmp rdi, rcx
-    jng noswap
+    jng nextcell
     xchg rdi, rcx
-noswap:
 
 nextcell:
-    add byte [rdx+rdi], 1 ; arr[y*1024+x] += 1
+    ; todo use byte test instructions?
+    mov al, [rdx+rdi]
+    inc al
+    mov esi, eax
+    shr esi, 2
+    not esi
+    and eax, esi
+    mov [rdx+rdi], al
+
+    ;add byte [rdx+rdi], 1 ; arr[y*1024+x] += 1
     add rdi, r9 ; rdi += stride
 
     cmp rdi, rcx
@@ -115,13 +127,13 @@ reducesum:
 
 
 final:
-    vmovdqa [rsp], ymm4
+    vmovdqa [rsp], ymm3
     vzeroupper ; AVX2 says BABAJ
 
     mov rax, [rsp]
     add rax, [rsp+8]
     add rax, [rsp+16]
-    add rax, [rsp+32]
+    add rax, [rsp+24]
 
     printnum rax
     printnum r14
