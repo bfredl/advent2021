@@ -15,6 +15,8 @@ extern printf
 main:
     push rbp
     mov rbp, rsp
+    xor r14, r14
+    xor r15, r15
 
     ; align to 32 bytes (AVX2 width)
     mov rax, 0x1f
@@ -37,17 +39,13 @@ nextline:
     cmp rax, 4
     jne done
 
-    printnum [rsp+8]
-    printnum [rsp+16]
-    printnum [rsp+24]
-    printnum [rsp+32]
-
 trycol:
     mov rax, [rsp+8]
     cmp rax, [rsp+24]
     jne tryrow
 
 drawcol:
+    inc r14
     ; basepointer: &arr[x]
     lea rdx, [rbx+rax]
     mov rdi, [rsp+16]
@@ -65,10 +63,11 @@ tryrow:
     jne nextline
 
 drawrow:
+    inc r15
     shl rax, 10 ; rax = y*1024
     lea rdx, [rbx+rax] ; rdx = arr[y*1024]
     mov rdi, [rsp+8]
-    mov rcx, [rsp+16]
+    mov rcx, [rsp+24]
     mov r9, 1
 
 drawcode:
@@ -87,6 +86,47 @@ nextcell:
     jmp nextcell
 
 done:
+    vzeroall ; AVX2 says helloo
+
+    mov al, 1
+    vpinsrb xmm2, al, 0
+    vpbroadcastb ymm2, xmm2
+
+feeelet:
+    vpsadbw ymm4, ymm2, ymm8
+
+    mov rcx, 0
+
+reducesum:
+    vmovdqa ymm1, [rbx+rcx]
+
+    ; equal bytes are set to 0xFF
+    vpcmpgtb ymm1, ymm1, ymm2
+    ; invert to get 0x01 for equal byte
+    vpsubw ymm1, ymm8, ymm1
+    ; reduce to four unsigned qwords
+    vpsadbw ymm1, ymm1, ymm8
+    ; accumulate qwords
+    vpaddq ymm3, ymm3, ymm1
+
+    add rcx, 32
+    cmp rcx, (1024*1024)
+    jl reducesum
+
+
+final:
+    vmovdqa [rsp], ymm4
+    vzeroupper ; AVX2 says BABAJ
+
+    mov rax, [rsp]
+    add rax, [rsp+8]
+    add rax, [rsp+16]
+    add rax, [rsp+32]
+
+    printnum rax
+    printnum r14
+    printnum r15
+
 
     mov rsp, rbp
     pop rbp
