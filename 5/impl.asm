@@ -95,31 +95,35 @@ nextcell:
     jmp nextcell
 
 done:
+    ;mov rax, 1 ; write
+    ;mov rdi, 1 ; stdout
+    ;mov rsi, rbx ; buf = array
+    ;mov rdx, (1024*1024) ; size
+    ;syscall ; thxplz
+
+
     vzeroall ; AVX2 says helloo
 
-    mov al, 1
+    mov al, 2
     vpinsrb xmm2, al, 0
     vpbroadcastb ymm2, xmm2
 
-feeelet:
-    vpsadbw ymm4, ymm2, ymm8
-
-    mov rcx, 0
+    mov r12, 0
 
 reducesum:
-    vmovdqa ymm1, [rbx+rcx]
+    vmovdqa ymm1, [rbx+r12]
 
     ; equal bytes are set to 0xFF
-    vpcmpgtb ymm1, ymm1, ymm2
+    vpcmpeqb ymm1, ymm1, ymm2
     ; invert to get 0x01 for equal byte
-    vpsubw ymm1, ymm8, ymm1
+    vpsubb ymm1, ymm8, ymm1
     ; reduce to four unsigned qwords
     vpsadbw ymm1, ymm1, ymm8
     ; accumulate qwords
     vpaddq ymm3, ymm3, ymm1
 
-    add rcx, 32
-    cmp rcx, (1024*1024)
+    add r12, 32
+    cmp r12, (1024*1024)
     jl reducesum
 
 
@@ -127,14 +131,14 @@ final:
     vmovdqa [rsp], ymm3
     vzeroupper ; AVX2 says BABAJ
 
-    mov rax, [rsp]
-    add rax, [rsp+8]
-    add rax, [rsp+16]
-    add rax, [rsp+24]
+    mov r13, [rsp]
+    add r13, [rsp+8]
+    add r13, [rsp+16]
+    add r13, [rsp+24]
 
-    printnum rax
-    printnum r14
-    printnum r15
+    printnum r13
+    ;printnum r14
+    ;printnum r15
 
 
     mov rsp, rbp
