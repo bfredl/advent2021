@@ -64,7 +64,7 @@ drawcol:
 tryrow:
     mov rax, [rsp+16]
     cmp rax, [rsp+32]
-    jne nextline
+    jne trydiag
 
 drawrow:
     inc r15
@@ -73,6 +73,35 @@ drawrow:
     mov rdi, [rsp+8]
     mov rcx, [rsp+24]
     mov r9, 1
+
+    jmp drawcode ; shared loop: rdi,rcx endpoints, r9 sride
+
+trydiag:
+    ; comment out for only row/col (subtask 1)
+    ;jmp nextline
+    mov rcx, [rsp+32]
+    mov r10, [rsp+8]
+    mov r11, [rsp+16]
+
+    jl nodiagswap ; if y1=rax > y2=rcx, swap
+    xchg rax, rcx
+    xchg r10, r11
+
+nodiagswap:
+
+    lea rdx, [rbx+r10] ; rdx = &arr[x0]
+    shl rax, 10
+    shl rcx, 10
+    mov rdi, rax ; rdi = 1024*y0
+    mov r9, (1024-1) ; y+=1, x-=1
+    cmp r10, r11 ; check if x goes up or down
+
+    jng nextcell ; skip swap, we already dunnit
+    mov r9, (1024+1) ; y+=1, x+=1
+    add rcx, 1024 ; we are gonna miss the final cell as rcx only counts y, twiddle
+
+    jmp nextcell ; skip swap, we already dunnit
+
 
 drawcode:
 ; make sure rdi <= rcx by swapping
@@ -91,10 +120,15 @@ nextcell:
     add rdi, r9 ; rdi += stride
 
     cmp rdi, rcx
-    jge nextline
+    jg nextline
     jmp nextcell
 
 done:
+    ;mov rax, 1 ; write
+    ;mov rdi, 1 ; stdout
+    ;mov rsi, rbx ; buf = array
+    ;mov rdx, (1024*1024) ; size
+    ;syscall ; thxplz
     vzeroall ; AVX2 says helloo
 
     mov al, 2
@@ -118,7 +152,6 @@ reducesum:
     cmp rcx, (1024*1024)
     jl reducesum
 
-
 final:
     vmovdqa [rsp], ymm3
     vzeroupper ; AVX2 says BABAJ
@@ -131,7 +164,6 @@ final:
     printnum rax
     ;printnum r14
     ;printnum r15
-
 
     mov rsp, rbp
     pop rbp
