@@ -83,11 +83,8 @@ drawcode:
 nextcell:
     ; todo use byte test instructions?
     mov al, [rdx+rdi]
-    inc al
-    mov esi, eax
-    shr esi, 2
-    not esi
-    and eax, esi
+    btr eax, 1 ; if eax=2 
+    adc eax, 1
     mov [rdx+rdi], al
 
     ;add byte [rdx+rdi], 1 ; arr[y*1024+x] += 1

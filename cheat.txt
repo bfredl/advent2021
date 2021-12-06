@@ -1,8 +1,8 @@
  AL  CL  DL  BL  SPL BPL SIL DIL R8B .. R15B
  AX  CX  DX  BX  SP  BP  SI  DI  R8W .. R15W
 EAX ECX EDX EBX ESP EBP ESI EDI  R8D .. R15D
-RAX RCX RDX RBX RSP RBP RSI RDI  R8  .. R15
-
+RAX RCX RDX RBX RSP RBP RSI RDI  R8  R9  R10 R11 R12 R13 R14 R15
+    4   3   S   st  f   2   1    5   6           S   S   S   S
 From left to right, pass as many parameters as will fit in registers:
     RDI, RSI, RDX, RCX, R8, R9.
 
