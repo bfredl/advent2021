@@ -81,7 +81,7 @@ trydiag:
     ;jmp nextline
     mov rcx, [rsp+32]
     mov r10, [rsp+8]
-    mov r11, [rsp+16]
+    mov r11, [rsp+24]
 
     jl nodiagswap ; if y1=rax > y2=rcx, swap
     xchg rax, rcx
@@ -96,7 +96,7 @@ nodiagswap:
     mov r9, (1024-1) ; y+=1, x-=1
     cmp r10, r11 ; check if x goes up or down
 
-    jng nextcell ; skip swap, we already dunnit
+    jg nextcell ; skip swap, we already dunnit
     mov r9, (1024+1) ; y+=1, x+=1
     add rcx, 1024 ; we are gonna miss the final cell as rcx only counts y, twiddle
 
@@ -124,11 +124,12 @@ nextcell:
     jmp nextcell
 
 done:
-    ;mov rax, 1 ; write
-    ;mov rdi, 1 ; stdout
-    ;mov rsi, rbx ; buf = array
-    ;mov rdx, (1024*1024) ; size
+    mov rax, 1 ; write
+    mov rdi, 1 ; stdout
+    mov rsi, rbx ; buf = array
+    mov rdx, (1024*1024) ; size
     ;syscall ; thxplz
+
     vzeroall ; AVX2 says helloo
 
     mov al, 2
