@@ -4,7 +4,7 @@ extern scanf
 extern printf
 
 %macro printnum 1
-   mov rdi, fmt
+   mov rdi, lfmt
    mov rsi, %1
    call printf
 %endmacro
@@ -21,12 +21,12 @@ main:
     push rbp
     mov rbp, rsp
 
-    sub rsp, 6*8
+    sub rsp, (10*8)
     lea rbx, [rsp+8]; int rbx[9]
 
     mov rdi, rbx
     mov rax, 0
-    mov rcx, (9*4)
+    mov rcx, (9*8)
     rep stosb
 
 readitem:
@@ -37,7 +37,7 @@ readitem:
     jne enda
 
     mov rax, [rsp+0]
-    add dword [rbx+4*rax], 1
+    add qword [rbx+8*rax], 1
     jmp readitem
 
 enda:
@@ -46,12 +46,12 @@ enda:
     xor r14, r14 ; first day is zero
 
 newday:
-    mov eax, [rbx+4*r13]
+    mov rax, [rbx+8*r13]
     lea rdi, [r13-2]; seven days later = -2 mod 9
     lea rsi, [r13+7]
     cmp rdi, 0
     cmovl rdi, rsi
-    add [rbx+4*rdi], eax
+    add [rbx+8*rdi], rax
 
     inc r13
     xor rax, rax
@@ -63,14 +63,14 @@ newday:
     ;printnum r14
     ;printnum r13
 
-    cmp r14, 160
+    cmp r14, 256
     jl newday
 
     xor r12, r12
     xor r13, r13
 ploop:
     ;printnum r12
-    mov eax, [rbx+4*r12]
+    mov rax, [rbx+8*r12]
     add r13, rax
 
     ;printenum eax
@@ -88,3 +88,5 @@ itemline:
     db  "%d,", 0
 fmt:
     db  "%d", 0xA, 0
+lfmt:
+    db  "%ld", 0xA, 0
